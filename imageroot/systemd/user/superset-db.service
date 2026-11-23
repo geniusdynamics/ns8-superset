@@ -1,0 +1,17 @@
+[Unit]
+Description=Apache Superset db
+BindsTo=superset.service
+PartOf=superset.service
+After=superset.service
+
+[Service]
+Type=notify
+NotifyAccess=all
+EnvironmentFile=%E/state/environment
+Restart=on-failure
+TimeoutStartSec=300
+TimeoutStopSec=75
+ExecStart=/usr/bin/podman run --pod superset --env-file=%E/state/superset.env --volume superset-db:/var/lib/postgresql/data:Z --replace --name %N --sdnotify=conmon --cgroups=no-conmon ${POSTGRES_IMAGE}
+ExecStartPost=/usr/bin/timeout 120 /usr/bin/bash -c 'until podman exec %N psql -h 127.0.0.1 -U superset -d superset -Atqc "SELECT 1" >/dev/null 2>&1; do sleep 2; done'
+ExecStop=/usr/bin/podman stop --ignore -t 30 %N
+ExecStopPost=/usr/bin/podman rm --ignore -f %N

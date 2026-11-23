@@ -1,0 +1,17 @@
+[Unit]
+Description=Apache Superset pod
+Requires=superset-db.service superset-web.service
+Before=superset-db.service superset-web.service
+
+[Service]
+Type=forking
+EnvironmentFile=%E/state/environment
+PIDFile=%t/superset.pid
+ExecStartPre=/usr/bin/rm -f %t/superset.pid
+ExecStartPre=/usr/bin/podman pod create --replace --name superset --infra-conmon-pidfile %t/superset.pid --publish 127.0.0.1:${TCP_PORT}:8088
+ExecStart=/usr/bin/podman pod start superset
+ExecStop=/usr/bin/podman pod stop --ignore -t 30 superset
+ExecStopPost=/usr/bin/podman pod rm --ignore -f superset
+
+[Install]
+WantedBy=default.target

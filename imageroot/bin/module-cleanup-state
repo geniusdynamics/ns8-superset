@@ -1,8 +1,3 @@
 #!/bin/bash
-
-#
-# Copyright (C) 2022 Nethesis S.r.l.
-# SPDX-License-Identifier: GPL-3.0-or-later
-#
-
-rm -vf kickstart.pg_dump
+set -e
+rm -f superset-data.tar superset-db.tar

@@ -1,0 +1,17 @@
+[Unit]
+Description=Apache Superset web
+BindsTo=superset.service
+PartOf=superset.service
+After=superset.service superset-db.service
+
+[Service]
+Type=notify
+NotifyAccess=all
+EnvironmentFile=%E/state/environment
+Restart=on-failure
+TimeoutStartSec=300
+TimeoutStopSec=75
+ExecStartPre=/usr/bin/podman run --pod superset --env-file=%E/state/superset.env --volume %E/etc/superset_config.py:/app/ns8_config.py:ro,Z --volume superset-data:/app/superset_home:Z,U --rm --volume %E/etc/superset-init.sh:/app/ns8-init.sh:ro,Z ${SUPERSET_RUNTIME_IMAGE} /bin/sh /app/ns8-init.sh
+ExecStart=/usr/bin/podman run --pod superset --env-file=%E/state/superset.env --volume %E/etc/superset_config.py:/app/ns8_config.py:ro,Z --volume superset-data:/app/superset_home:Z,U --replace --name %N --sdnotify=conmon --cgroups=no-conmon ${SUPERSET_RUNTIME_IMAGE} gunicorn -w 2 -k gthread --threads 4 -b 0.0.0.0:8088 "superset.app:create_app()"
+ExecStop=/usr/bin/podman stop --ignore -t 30 %N
+ExecStopPost=/usr/bin/podman rm --ignore -f %N
