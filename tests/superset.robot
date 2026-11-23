@@ -18,6 +18,15 @@ Configure superset
 Check Web Response
     Wait Until Keyword Succeeds    5 min    5 sec    Check Health
 
+Recover Module Volumes
+    ${rc}=    Execute Command    runagent -m ${module_id} module-dump-state    return_stdout=False    return_rc=True
+    Should Be Equal As Integers    ${rc}    0
+    ${rc}=    Execute Command
+    ...    runagent -m ${module_id} bash -ec 'test -s superset-data.tar && test -s superset-db.tar && systemctl --user stop superset.service && podman volume rm superset-data superset-db && "$AGENT_INSTALL_DIR/actions/restore-module/40restore_volume" && systemctl --user start superset.service superset-web.service'
+    ...    return_stdout=False    return_rc=True
+    Should Be Equal As Integers    ${rc}    0
+    Wait Until Keyword Succeeds    5 min    5 sec    Check Health
+
 Remove superset
     ${rc}=    Execute Command    remove-module --no-preserve ${module_id}    return_stdout=False    return_rc=True
     Should Be Equal As Integers    ${rc}    0
