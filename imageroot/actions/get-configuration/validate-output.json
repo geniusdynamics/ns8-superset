@@ -19,8 +19,7 @@
     "properties": {
         "host": {
             "type": "string",
-            "description": "Host name for the application, like 'superset.domain.org'",
-            "format": "idn-hostname"
+            "description": "Host name for the application, like 'superset.domain.org'"
         },
         "lets_encrypt": {
             "type": "boolean",

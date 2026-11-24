@@ -13,8 +13,11 @@ import os
 request = json.load(sys.stdin)
 renv = request['environment']
 
+# lets_encrypt is deliberately not restored: the DNS may not point to the new
+# node yet. Enable it again from the module settings once the DNS is ready.
 configure_retval = agent.tasks.run(agent_id=os.environ['AGENT_ID'], action='configure-module', data={
     "host": renv["TRAEFIK_HOST"],
-    "http2https": renv["TRAEFIK_HTTP2HTTPS"] == "True",
+    "http2https": renv.get("TRAEFIK_HTTP2HTTPS", "True").lower() == "true",
+    "lets_encrypt": False,
 })
 agent.assert_exp(configure_retval['exit_code'] == 0, "The configure-module subtask failed!")

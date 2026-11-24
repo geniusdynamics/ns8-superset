@@ -1,5 +1,13 @@
 #!/bin/bash
+
+#
+# Copyright (C) 2025 Genius Dynamics
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Restart, not start: the web service reads TRAEFIK_HTTP2HTTPS at startup.
+# List every unit, the pod first, so that the ordering is respected.
 set -e
 exec 1>&2
 systemctl --user enable superset.service
-systemctl --user start superset.service superset-db.service superset-web.service
+systemctl --user restart superset.service superset-db.service superset-web.service

@@ -1,3 +1,12 @@
 #!/bin/bash
+
+#
+# Copyright (C) 2025 Genius Dynamics
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Restart a running module on the new images. The web service migrates the
+# metadata database (superset db upgrade, superset init) before it starts.
 set -e
+exec 1>&2
 systemctl --user try-restart superset.service superset-db.service superset-web.service

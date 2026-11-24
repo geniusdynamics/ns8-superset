@@ -42,18 +42,17 @@ buildah run \
 buildah add "${container}" imageroot /imageroot
 buildah add "${container}" ui/dist /ui
 # Setup the entrypoint, ask to reserve one TCP port with the label and set a rootless container
-# Select you image(s) with the label org.nethserver.images
-# ghcr.io/xxxxx is the GitHub container registry or your own registry or docker.io for Docker Hub
-# The image tag is set to latest by default, but can be overridden with the IMAGETAG environment variable
-# --label="org.nethserver.images=docker.io/mariadb:13.0.2 docker.io/roundcube/roundcubemail:1.6.19-apache"
+# org.nethserver.images lists every image pulled at runtime. Always use fully
+# pinned tags, Renovate reads them: the custom Superset runtime image built
+# from Containerfile (published together with the module) and PostgreSQL.
 # rootfull=0 === rootless container
-# tcp-ports-demand=1 number of tcp Port to reserve , 1 is the minimum, can be udp or tcp
+# tcp-ports-demand=1 number of tcp Port to reserve
 buildah config --entrypoint=/ \
     --label="org.nethserver.authorizations=traefik@node:routeadm" \
     --label="org.nethserver.tcp-ports-demand=1" \
     --label="org.nethserver.rootfull=0" \
     --label="org.nethserver.min-core=3.20.1" \
-    --label="org.nethserver.images=${repobase}/superset-runtime:${IMAGETAG:-latest} docker.io/library/postgres:17.11-alpine" \
+    --label="org.nethserver.images=${repobase}/superset-runtime:${IMAGETAG:-latest} docker.io/library/postgres:17.12-alpine" \
     "${container}"
 # Commit the image
 buildah commit "${container}" "${repobase}/${reponame}"
@@ -61,16 +60,6 @@ buildah commit "${container}" "${repobase}/${reponame}"
 # Append the image URL to the images array
 images+=("${repobase}/${reponame}")
 images+=("${repobase}/superset-runtime")
-
-#
-# NOTICE:
-#
-# It is possible to build and publish multiple images.
-#
-# 1. create another buildah container
-# 2. add things to it and commit it
-# 3. append the image url to the images array
-#
 
 #
 # Setup CI when pushing to Github. 

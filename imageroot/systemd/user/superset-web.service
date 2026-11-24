@@ -1,5 +1,5 @@
 [Unit]
-Description=Apache Superset web
+Description=Apache Superset web application
 BindsTo=superset.service
 PartOf=superset.service
 After=superset.service superset-db.service
@@ -9,9 +9,32 @@ Type=notify
 NotifyAccess=all
 EnvironmentFile=%E/state/environment
 Restart=on-failure
-TimeoutStartSec=300
+RestartSec=10
+# The first start runs the database migrations, which can take several minutes
+TimeoutStartSec=900
 TimeoutStopSec=75
-ExecStartPre=/usr/bin/podman run --pod superset --env-file=%E/state/superset.env --volume %E/etc/superset_config.py:/app/ns8_config.py:ro,Z --volume superset-data:/app/superset_home:Z,U --rm --volume %E/etc/superset-init.sh:/app/ns8-init.sh:ro,Z ${SUPERSET_RUNTIME_IMAGE} /bin/sh /app/ns8-init.sh
-ExecStart=/usr/bin/podman run --pod superset --env-file=%E/state/superset.env --volume %E/etc/superset_config.py:/app/ns8_config.py:ro,Z --volume superset-data:/app/superset_home:Z,U --replace --name %N --sdnotify=conmon --cgroups=no-conmon ${SUPERSET_RUNTIME_IMAGE} gunicorn -w 2 -k gthread --threads 4 -b 0.0.0.0:8088 "superset.app:create_app()"
+# Apply database migrations and create the admin user (idempotent). The admin
+# password is loaded here only, the web server never sees it.
+ExecStartPre=/usr/bin/podman run --rm --pod superset \
+    --env-file=%E/state/superset.env \
+    --env-file=%E/state/admin.env \
+    --volume %E/etc/superset_config.py:/app/ns8_config.py:ro,Z \
+    --volume %E/etc/superset-init.sh:/app/ns8-init.sh:ro,Z \
+    --volume superset-data:/app/superset_home:Z,U \
+    ${SUPERSET_RUNTIME_IMAGE} /bin/sh /app/ns8-init.sh
+ExecStart=/usr/bin/podman run --pod superset \
+    --env-file=%E/state/superset.env \
+    --env NS8_HTTP2HTTPS=${TRAEFIK_HTTP2HTTPS} \
+    --volume %E/etc/superset_config.py:/app/ns8_config.py:ro,Z \
+    --volume superset-data:/app/superset_home:Z,U \
+    --replace --name %N \
+    --sdnotify=conmon --cgroups=no-conmon \
+    ${SUPERSET_RUNTIME_IMAGE} \
+    gunicorn --workers 2 --worker-class gthread --threads 4 --timeout 120 \
+    --limit-request-line 0 --limit-request-field_size 0 \
+    --access-logfile - --error-logfile - \
+    --bind 0.0.0.0:8088 "superset.app:create_app()"
+# Report the unit as started only when the application answers its health check
+ExecStartPost=/usr/bin/timeout 300 /usr/bin/bash -c 'until podman exec %N curl -fsS -o /dev/null http://127.0.0.1:8088/health; do sleep 3; done'
 ExecStop=/usr/bin/podman stop --ignore -t 30 %N
 ExecStopPost=/usr/bin/podman rm --ignore -f %N

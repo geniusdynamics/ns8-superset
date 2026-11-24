@@ -19,7 +19,8 @@
             "type": "string",
             "description": "Host name for the application, like 'superset.domain.org'",
             "format": "hostname",
-            "pattern": "\\."
+            "pattern": "\\.",
+            "minLength": 3
         },
         "lets_encrypt": {
             "type": "boolean",

@@ -1,0 +1,38 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2025 Genius Dynamics
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Load the database dump restored by restic into the empty superset-db volume.
+# An ephemeral PostgreSQL container initializes the cluster with the restored
+# credentials, runs the restore script from docker-entrypoint-initdb.d, then
+# stops. The dump is piped through stdin.
+set -e -o pipefail
+exec 1>&2
+
+test -s superset.pg_dump
+
+mkdir -vp restore
+# World readable on purpose: the entrypoint runs it as the postgres user. It
+# holds no secret. It is sourced, so docker_temp_server_stop is available.
+(umask 022; cat - >restore/superset_restore.sh) <<'EOS'
+pg_restore --no-owner --no-privileges -U "${POSTGRES_USER}" -d "${POSTGRES_DB}"
+ec=$?
+docker_temp_server_stop
+exit $ec
+EOS
+chmod 0644 restore/superset_restore.sh
+
+podman run \
+    --rm \
+    --interactive \
+    --network=none \
+    --volume=./restore:/docker-entrypoint-initdb.d/:Z \
+    --volume=superset-db:/var/lib/postgresql/data:Z \
+    --replace --name=restore_db \
+    --env-file=postgres.env \
+    "${POSTGRES_IMAGE}" < superset.pg_dump
+
+rm -rfv restore superset.pg_dump

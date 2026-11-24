@@ -6,7 +6,7 @@
 #
 
 #
-# Read configuration
+# Read configuration. No secret is ever returned by this action.
 #
 
 import os
@@ -14,13 +14,14 @@ import sys
 import json
 import agent
 
-# Prepare return variable
 config = {}
+config["host"] = os.getenv("TRAEFIK_HOST", "")
+config["http2https"] = os.getenv("TRAEFIK_HTTP2HTTPS", "True") == "True"
+config["lets_encrypt"] = False
+if config["host"]:
+    try:
+        config["lets_encrypt"] = bool(agent.get_route(os.environ['MODULE_ID']).get('lets_encrypt', False))
+    except Exception as ex:
+        print(agent.SD_WARNING + f"Cannot read the Traefik route: {ex}", file=sys.stderr)
 
-# Read current configuration from the environment file
-config["host"] = os.getenv("TRAEFIK_HOST","")
-config["http2https"] = os.getenv("TRAEFIK_HTTP2HTTPS") == "True"
-config["lets_encrypt"] = agent.get_route(os.environ['MODULE_ID']).get('lets_encrypt', False)
-
-# Dump the configuration to stdout
 json.dump(config, fp=sys.stdout)

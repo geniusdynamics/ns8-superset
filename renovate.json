@@ -2,5 +2,12 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "local>NethServer/.github:ns8-automerge"
+  ],
+  "packageRules": [
+    {
+      "description": "The database volume is a PostgreSQL 17 cluster: a major upgrade needs a dump and restore, handle it manually",
+      "matchPackageNames": ["postgres", "docker.io/library/postgres"],
+      "allowedVersions": "<18"
+    }
   ]
 }
