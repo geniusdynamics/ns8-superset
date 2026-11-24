@@ -39,6 +39,25 @@
         />
       </cv-column>
     </cv-row>
+    <cv-row v-if="host">
+      <cv-column>
+        <NsInlineNotification
+          kind="info"
+          :title="$t('status.initial_credentials_title')"
+          :showCloseButton="false"
+        >
+          <template #description>
+            <div class="mg-bottom-sm">
+              {{ $t("status.initial_credentials_description") }}
+            </div>
+            <NsCodeSnippet :wrap-text="true" hideExpandButton
+              >runagent -m
+              {{ instanceName }} superset-initial-credentials</NsCodeSnippet
+            >
+          </template>
+        </NsInlineNotification>
+      </cv-column>
+    </cv-row>
     <cv-row>
       <cv-column :md="4" :max="4">
         <NsInfoCard
@@ -332,6 +351,7 @@ export default {
         getConfiguration: false,
       },
       error: {
+        getConfiguration: "",
         getStatus: "",
         listBackupRepositories: "",
         listBackups: "",
@@ -595,6 +615,10 @@ export default {
 
 <style scoped lang="scss">
 @import "../styles/carbon-utils";
+
+.mg-bottom-sm {
+  margin-bottom: $spacing-03;
+}
 
 .break-word {
   word-wrap: break-word;

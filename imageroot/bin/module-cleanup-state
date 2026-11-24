@@ -1,3 +1,9 @@
 #!/bin/bash
-set -e
-rm -f superset-data.tar superset-db.tar
+
+#
+# Copyright (C) 2025 Genius Dynamics
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Runs after the backup: remove the temporary dump file
+rm -vf superset.pg_dump superset.pg_dump.tmp

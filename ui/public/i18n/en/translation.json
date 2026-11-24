@@ -19,26 +19,27 @@
     "no_services": "No services",
     "no_images": "No images",
     "no_volumes": "No volumes",
-    "superset_webapp": "superset webapp",
+    "superset_webapp": "Superset web application",
     "not_configured": "Not configured",
-    "open_webapp": "Open superset",
-    "configure": "Configure"
+    "open_webapp": "Open Superset",
+    "configure": "Configure",
+    "initial_credentials_title": "Initial administrator account",
+    "initial_credentials_description": "Sign in as admin. The first password is generated at installation. Run this command on the node as root to read it, then change it from the Superset user settings."
   },
   "settings": {
     "title": "Settings",
     "configure_instance": "Configure {instance}",
     "save": "Save",
-    "superset_fqdn": "superset hostname (FQDN)",
-    "lets_encrypt": "Request LE Certificate",
+    "superset_fqdn": "Superset hostname (FQDN)",
+    "lets_encrypt": "Request Let's Encrypt certificate",
     "http_to_https": "Force HTTPS",
     "enabled": "Enabled",
     "disabled": "Disabled",
-    "advanced": "Advanced",
     "configuring": "Configuring",
-    "instance_configuration": "Configure superset",
+    "instance_configuration": "Configure {instance}",
     "domain_already_used_in_traefik": "Domain already used in traefik",
     "host_pattern": "Must be a valid fully qualified domain name",
-    "host_format": "Must be a valid fully qualified domain name"
+    "host_format": "Must be a valid fully qualified domain name, like superset.example.org"
   },
   "about": {
     "title": "About"

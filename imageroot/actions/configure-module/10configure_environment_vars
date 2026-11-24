@@ -9,12 +9,8 @@ import json
 import sys
 import agent
 
-# Try to parse the stdin as JSON.
-# If parsing fails, output everything to stderr
 data = json.load(sys.stdin)
-# Setup default values
-host = data.get("host")
-h2hs = data.get("http2https", True)
 
-agent.set_env("TRAEFIK_HOST", host)
-agent.set_env("TRAEFIK_HTTP2HTTPS", h2hs)
+# Only non-secret values here: agent.set_env() is stored in Redis
+agent.set_env("TRAEFIK_HOST", data["host"])
+agent.set_env("TRAEFIK_HTTP2HTTPS", data.get("http2https", True))

@@ -1,4 +1,8 @@
 #!/bin/sh
+# Runs before every start of the web service: migrate the metadata database,
+# initialize roles and permissions, create the admin user if it does not exist.
+# Every step is idempotent, so the same script serves first install, restart
+# and upgrade.
 set -eu
 superset db upgrade
 superset init

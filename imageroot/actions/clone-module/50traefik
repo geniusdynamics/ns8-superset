@@ -8,9 +8,12 @@
 import agent
 import os
 
+# Never copy lets_encrypt on clone: the DNS may not point to this node yet and
+# the certificate request would fail the whole clone. Enable it again from the
+# module settings once the DNS is ready.
 configure_retval = agent.tasks.run(agent_id=os.environ['AGENT_ID'], action='configure-module', data={
-    "lets_encrypt": os.environ["TRAEFIK_LETS_ENCRYPT"] == "True",
     "host": os.environ["TRAEFIK_HOST"],
-    "http2https": os.environ["TRAEFIK_HTTP2HTTPS"] == "True",
+    "http2https": os.environ.get("TRAEFIK_HTTP2HTTPS", "True").lower() == "true",
+    "lets_encrypt": False,
 })
 agent.assert_exp(configure_retval['exit_code'] == 0, "The configure-module subtask failed!")

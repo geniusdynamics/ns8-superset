@@ -24,8 +24,6 @@ set_route_data = {
     'url':  'http://127.0.0.1:' + os.environ["TCP_PORT"],
     'host': host,
     'http2https': h2hs,
-    'lets_encrypt_check': True,
-    'lets_encrypt_cleanup': True,
 }
 if 'lets_encrypt' in data:
     set_route_data['lets_encrypt'] = data['lets_encrypt']

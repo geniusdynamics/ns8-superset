@@ -1,18 +1,17 @@
 #!/bin/bash
+
+#
+# Copyright (C) 2025 Genius Dynamics
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+
+# Runs before the backup, with the state directory as working directory.
+# The dump is taken online: the application keeps running.
 set -euo pipefail
+exec 1>&2
 umask 077
-running=false
-if systemctl --user is-active --quiet superset.service; then running=true; fi
-finish() {
-    status=$?
-    rm -f "${tempfile:-}"
-    if "$running"; then systemctl --user start superset.service superset-db.service superset-web.service || status=1; fi
-    exit "$status"
-}
-trap finish EXIT
-if "$running"; then systemctl --user stop superset.service; fi
-for volume in superset-data superset-db; do
-    tempfile=$(mktemp -p "$PWD")
-    podman unshare bash -ec 'tar --numeric-owner -C "$(podman volume mount "$1")" -cpf "$2" .' bash "$volume" "$tempfile"
-    mv -f "$tempfile" "$volume.tar"
-done
+echo "Dumping the superset PostgreSQL database"
+trap 'rm -f superset.pg_dump.tmp' EXIT
+podman exec superset-db pg_dump -U superset --format=c superset > superset.pg_dump.tmp
+test -s superset.pg_dump.tmp
+mv -f superset.pg_dump.tmp superset.pg_dump
