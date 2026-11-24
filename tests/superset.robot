@@ -61,7 +61,7 @@ Initial administrator can sign in
 
 Backup state is produced and cleaned up
     ${rc}=    Execute Command
-    ...    runagent -m ${module_id} bash -ec 'cd "$AGENT_STATE_DIR" && "$AGENT_INSTALL_DIR/bin/module-dump-state" && test -s superset.pg_dump && test "$(stat -c %a superset.pg_dump)" = 600 && for f in $(grep ^state/ "$AGENT_INSTALL_DIR/etc/state-include.conf"); do test -e "$AGENT_STATE_DIR/${f#state/}" || { echo missing $f >&2; exit 1; }; done'
+    ...    runagent -m ${module_id} bash -ec 'cd "$AGENT_STATE_DIR" && "$AGENT_INSTALL_DIR/bin/module-dump-state" && test -s superset.pg_dump && test "$(stat -c %a superset.pg_dump)" = 600 && for f in $(grep ^state/ "$AGENT_INSTALL_DIR/etc/state-include.conf"); do test -e "$AGENT_STATE_DIR/\${f#state/}" || { echo missing $f >&2; exit 1; }; done'
     ...    return_stdout=False    return_rc=True
     Should Be Equal As Integers    ${rc}    0
     ${rc}=    Execute Command
