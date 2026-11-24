@@ -9,7 +9,7 @@ ${TEST_HOST}    superset.ns8-ci.test
 Install superset
     ${output}    ${rc}=    Execute Command    add-module ${IMAGE_URL} 1    return_rc=True
     Should Be Equal As Integers    ${rc}    0
-    ${result}=    Evaluate    json.loads($output)    modules=json
+    ${result}=    Evaluate    ast.literal_eval($output)    modules=ast
     Set Suite Variable    ${module_id}    ${result}[module_id]
 
 Secrets are generated with restricted permissions
