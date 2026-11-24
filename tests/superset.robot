@@ -34,8 +34,8 @@ Get configuration returns the settings and no secret
     ${output}    ${rc}=    Execute Command    api-cli run module/${module_id}/get-configuration    return_rc=True
     Should Be Equal As Integers    ${rc}    0
     ${config}=    Evaluate    json.loads($output)    modules=json
-    Should Be Equal    ${config}[output][host]    ${TEST_HOST}
-    Should Be True    ${config}[output][http2https]
+    Should Be Equal    ${config}[host]    ${TEST_HOST}
+    Should Be True    ${config}[http2https]
     ${password}=    Get admin password
     Should Not Contain    ${output}    ${password}
     Should Not Contain    ${output.lower()}    secret_key
@@ -45,7 +45,7 @@ Health endpoint answers
 
 Login page is served
     ${output}    ${rc}=    Execute Command
-    ...    curl -ksS -w '%{http_code}' --resolve ${TEST_HOST}:443:127.0.0.1 https://${TEST_HOST}/login/
+    ...    curl -ksS -w '\%{http_code}' --resolve ${TEST_HOST}:443:127.0.0.1 https://${TEST_HOST}/login/
     ...    return_rc=True
     Should Be Equal As Integers    ${rc}    0
     Should Contain    ${output}    Superset
@@ -61,7 +61,7 @@ Initial administrator can sign in
 
 Backup state is produced and cleaned up
     ${rc}=    Execute Command
-    ...    runagent -m ${module_id} bash -ec 'cd "$AGENT_STATE_DIR" && "$AGENT_INSTALL_DIR/bin/module-dump-state" && test -s superset.pg_dump && test "$(stat -c %a superset.pg_dump)" = 600 && for f in $(grep ^state/ "$AGENT_INSTALL_DIR/etc/state-include.conf"); do test -e "$f" || { echo missing $f >&2; exit 1; }; done'
+    ...    runagent -m ${module_id} bash -ec 'cd "$AGENT_STATE_DIR" && "$AGENT_INSTALL_DIR/bin/module-dump-state" && test -s superset.pg_dump && test "$(stat -c %a superset.pg_dump)" = 600 && for f in $(grep ^state/ "$AGENT_INSTALL_DIR/etc/state-include.conf"); do test -e "$AGENT_STATE_DIR/${f#state/}" || { echo missing $f >&2; exit 1; }; done'
     ...    return_stdout=False    return_rc=True
     Should Be Equal As Integers    ${rc}    0
     ${rc}=    Execute Command
