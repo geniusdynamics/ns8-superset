@@ -1,11 +1,18 @@
 #!/bin/bash
-
-#
-# Copyright (C) 2022 Nethesis S.r.l.
-# SPDX-License-Identifier: GPL-3.0-or-later
-#
-
-set -e
-
-echo "Dumping kickstart postgres database"
-podman exec postgresql-app pg_dump -U postgres --format=c  kickstart > kickstart.pg_dump
+set -euo pipefail
+umask 077
+running=false
+if systemctl --user is-active --quiet superset.service; then running=true; fi
+finish() {
+    status=$?
+    rm -f "${tempfile:-}"
+    if "$running"; then systemctl --user start superset.service superset-db.service superset-web.service || status=1; fi
+    exit "$status"
+}
+trap finish EXIT
+if "$running"; then systemctl --user stop superset.service; fi
+for volume in superset-data superset-db; do
+    tempfile=$(mktemp -p "$PWD")
+    podman unshare bash -ec 'tar --numeric-owner -C "$(podman volume mount "$1")" -cpf "$2" .' bash "$volume" "$tempfile"
+    mv -f "$tempfile" "$volume.tar"
+done
